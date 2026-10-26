@@ -1,0 +1,904 @@
+<!doctype html>
+<html lang="id">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>CV Forge</title>
+<script src="https://cdn.tailwindcss.com/3.4.17"></script>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,600;12..96,700&family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+/* Layout: workbench. Left = editor with tabs, right = A4 paper preview on a muted desk. Paper is always white and ATS-plain. */
+:root{
+  --bg:#E8ECE9; --surface:#F7F9F7; --field:#FFFFFF; --ink:#15201C; --muted:#5A6A64; --line:#C9D2CD;
+  --accent:#0E6A5A; --accent-ink:#FFFFFF; --accent-soft:#D5EBE5;
+  --warn:#8A5200; --warn-bg:#FFEFD0; --bad:#A3281F; --bad-bg:#FCE3E0; --good:#1B6636; --good-bg:#DAF1E1; --info:#3B5B73; --info-bg:#E2EDF5;
+  --font-display:'Bricolage Grotesque','Segoe UI',system-ui,sans-serif;
+  --font-body:'IBM Plex Sans','Segoe UI',system-ui,sans-serif;
+  --font-mono:'IBM Plex Mono',ui-monospace,Consolas,monospace;
+}
+@media (prefers-color-scheme: dark){
+  :root{
+    --bg:#0F1513; --surface:#161F1B; --field:#1C2722; --ink:#E5EEEA; --muted:#98A9A2; --line:#2B3933;
+    --accent:#4FC3A8; --accent-ink:#06201A; --accent-soft:#1B3A33;
+    --warn:#F0B454; --warn-bg:#392B10; --bad:#FF9188; --bad-bg:#3A1714; --good:#72D694; --good-bg:#14301F; --info:#8DB8D6; --info-bg:#173040;
+    color-scheme: dark;
+  }
+}
+*{box-sizing:border-box}
+html,body{margin:0}
+body{background:var(--bg);color:var(--ink);font-family:var(--font-body);font-size:14px;line-height:1.45}
+h1,h2,h3{font-family:var(--font-display);margin:0}
+button{font:inherit;cursor:pointer}
+:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+.inp{width:100%;background:var(--field);color:var(--ink);border:1px solid var(--line);border-radius:6px;padding:7px 9px;font:inherit}
+textarea.inp{resize:vertical;min-height:38px;overflow:hidden}
+.lbl{display:block;font-size:11px;letter-spacing:.06em;text-transform:uppercase;color:var(--muted);margin-bottom:3px;font-weight:500}
+.btn{border:1px solid var(--line);background:var(--surface);color:var(--ink);padding:6px 11px;border-radius:6px;font-weight:500;font-size:13px;white-space:nowrap}
+.btn:hover{border-color:var(--accent)}
+.btn-primary{background:var(--accent);color:var(--accent-ink);border-color:var(--accent)}
+.btn-ghost{border-color:transparent;background:transparent;color:var(--muted)}
+.btn-ghost:hover{color:var(--ink);border-color:var(--line)}
+.btn-danger{color:var(--bad);border-color:var(--bad)}
+.card{background:var(--surface);border:1px solid var(--line);border-radius:8px}
+.chip{display:inline-block;padding:1px 8px;border-radius:99px;font-size:11.5px;font-weight:500;line-height:1.6}
+.chip.warn{background:var(--warn-bg);color:var(--warn)}
+.chip.bad{background:var(--bad-bg);color:var(--bad)}
+.chip.good{background:var(--good-bg);color:var(--good)}
+.chip.info{background:var(--info-bg);color:var(--info)}
+.chip.mono{font-family:var(--font-mono)}
+.tab{padding:8px 12px;border:0;border-bottom:2px solid transparent;background:none;color:var(--muted);font-weight:500}
+.tab[aria-selected="true"]{color:var(--ink);border-bottom-color:var(--accent)}
+.sec-title{font-size:15px;font-weight:700}
+.hint{font-size:12.5px;color:var(--muted)}
+.mono{font-family:var(--font-mono)}
+.status{display:flex;gap:8px;align-items:flex-start;padding:8px 10px;border-radius:6px;font-size:13px}
+.status.pass{background:var(--good-bg);color:var(--good)}
+.status.warn{background:var(--warn-bg);color:var(--warn)}
+.status.fail{background:var(--bad-bg);color:var(--bad)}
+.status.info{background:var(--info-bg);color:var(--info)}
+.status b{font-weight:600}
+.meter{height:10px;border-radius:99px;background:var(--line);position:relative;overflow:hidden}
+.meter>i{position:absolute;left:0;top:0;bottom:0;background:var(--accent)}
+.meter>u{position:absolute;top:0;bottom:0;width:1px;background:var(--ink);opacity:.5;text-decoration:none}
+.zone{position:absolute;top:0;bottom:0;background:var(--accent-soft)}
+
+/* ---------- A4 paper (ATS-safe: one column, web-safe font, no icons/photos/skill bars) ---------- */
+.desk{padding:18px 0}
+.pv-wrap{position:relative;margin:0 auto;overflow:hidden}
+.paper{font-family:Arial,Helvetica,sans-serif;font-size:12.5px;line-height:1.42;color:#111;background:#fff;width:794px;min-height:1123px;padding:42px 48px;box-sizing:border-box;box-shadow:0 1px 3px rgba(0,0,0,.25),0 12px 30px rgba(0,0,0,.12);transform-origin:top left}
+.paper.compact{font-size:11.5px;line-height:1.36;padding:34px 44px}
+.paper h1{font-family:Arial,Helvetica,sans-serif;font-size:25px;line-height:1.15;margin:0;font-weight:700;letter-spacing:.2px}
+.paper .headline{font-size:13.5px;margin-top:3px;font-weight:600}
+.paper .contact{margin-top:4px;font-size:11.5px}
+.paper h2{font-family:Arial,Helvetica,sans-serif;font-size:11.5px;text-transform:uppercase;letter-spacing:.09em;border-bottom:1px solid #111;margin:14px 0 6px;padding-bottom:2px;font-weight:700}
+.paper .row{display:flex;justify-content:space-between;gap:12px;font-weight:700;margin-top:6px}
+.paper .row:first-of-type{margin-top:0}
+.paper .row span.r{font-weight:400;white-space:nowrap}
+.paper .sub{font-style:italic;margin-top:0}
+.paper ul{margin:3px 0 0;padding-left:17px;list-style:disc}
+.paper li{margin:1px 0}
+.paper p{margin:0}
+.paper .ph{background:#FFE08A;color:#111;border-radius:2px}
+.paper .letter p{margin:0 0 10px;text-align:justify;text-justify:inter-word}
+.paper .letter .gap{height:10px}
+#printRoot{display:none}
+@media print{
+  @page{size:A4;margin:0}
+  body{background:#fff !important}
+  body>*:not(#printRoot){display:none !important}
+  #printRoot{display:block !important}
+  #printRoot .paper{box-shadow:none;transform:none !important;width:100%;min-height:0}
+  .paper .ph{background:none}
+}
+</style>
+</head>
+<body>
+<div id="app"></div>
+<div id="toast" role="status" aria-live="polite" style="position:fixed;left:16px;bottom:16px;z-index:50"></div>
+<div id="measure" aria-hidden="true" style="position:absolute;left:-99999px;top:0;width:794px;visibility:hidden"></div>
+<div id="printRoot"></div>
+<input type="file" id="importFile" accept="application/json,.json" hidden>
+
+<script>
+/* ======================================================================
+   CV Forge: data, analysis, rendering. Vanilla JS, no build step.
+   Rules baked in come from Jeff Su's "Resume Guide for the AI Era" and
+   "5 Cover Letter Mistakes".
+   ====================================================================== */
+const SEED = [
+ {
+  "name": "CV - Junior Frontend Developer (Pusat Gadai Indonesia)",
+  "target": {
+   "title": "Junior Frontend Developer",
+   "company": "PT Pusat Gadai Indonesia",
+   "url": "https://freehire.me/jobs/junior-frontend-developer-pt-pusat-gadai-indonesia-ddhzsded",
+   "jd": "Junior Frontend Developer - PT Pusat Gadai Indonesia (contract, junior, fresh graduates welcome)\n\nResponsibilities\n- Build responsive web interfaces.\n- Manage code with Git.\n- Collaborate with the team.\n- Work occasionally at night (10 PM to 1 AM) during feature or product deployments.\n\nRequirements\n- Experience with responsive design using a CSS framework such as Tailwind or Bootstrap.\n- Experience with version control (Git).\n- Experience with API documentation tools such as Postman or Bruno.\n- Careful, focused, and critical when developing software.\n- Good communication with coworkers.\n- Ability to work under pressure and strict deadlines.\n\nInterview: Google Meet with casual talk and live coding (variables, conditionals, loops, arrays, basic framework and CSS knowledge), then psychotest."
+  },
+  "template": {
+   "fresh": true,
+   "compact": false
+  },
+  "basics": {
+   "name": "Your Name",
+   "headline": "Junior Frontend Developer",
+   "email": "your.name@email.com",
+   "phone": "+62 812 0000 0000",
+   "location": "Your City, Indonesia",
+   "links": [
+    {
+     "label": "GitHub",
+     "url": "github.com/yourname"
+    },
+    {
+     "label": "Portfolio",
+     "url": "yourname.dev"
+    }
+   ]
+  },
+  "summary": "Computer Science student and aspiring Junior Frontend Developer who builds responsive interfaces with Tailwind CSS and Bootstrap, manages every change in Git, and documents APIs in Postman and Bruno. Collaborates closely with teammates, solves problems carefully, and stays comfortable with live coding, strict deadlines, and occasional late-night release support.",
+  "experience": [
+   {
+    "id": "x1",
+    "role": "[Internship / Organization Role]",
+    "org": "[Organization name]",
+    "location": "[City]",
+    "start": "[Month Year]",
+    "end": "[Month Year]",
+    "bullets": [
+     "Fixed [N] responsive layout issues on an internal website by testing [N] screen sizes and committing each fix through Git",
+     "Supported [N] feature releases, including after-hours deployments, by checking UI and API responses before each go-live"
+    ]
+   }
+  ],
+  "projects": [
+   {
+    "id": "p1",
+    "name": "Responsive Storefront UI",
+    "link": "github.com/yourname/storefront",
+    "stack": "HTML, Tailwind CSS, JavaScript",
+    "bullets": [
+     "Built a mobile-first storefront in Tailwind CSS that scored [92] on Lighthouse performance across [3] breakpoints",
+     "Cut layout bugs found in peer testing by [40]% by reusing [12] shared components instead of page-specific styles"
+    ]
+   },
+   {
+    "id": "p2",
+    "name": "Inventory Dashboard (API client)",
+    "link": "github.com/yourname/inventory-dashboard",
+    "stack": "JavaScript, Bootstrap, REST API",
+    "bullets": [
+     "Documented [15] REST endpoints in Postman and Bruno collections, cutting teammate onboarding to [10] minutes",
+     "Delivered the dashboard [2] days before the course deadline by splitting work into [5] Git branches with pull request reviews"
+    ]
+   }
+  ],
+  "education": [
+   {
+    "id": "e1",
+    "school": "[University Name]",
+    "degree": "Bachelor of Computer Science (expected [Year])",
+    "start": "[Year]",
+    "end": "[Year]",
+    "gpa": "GPA [3.xx]/4.00",
+    "details": "Relevant coursework: Web Programming, Data Structures, Database Systems"
+   }
+  ],
+  "skills": [
+   {
+    "id": "s1",
+    "group": "Frontend",
+    "items": "HTML5, CSS3, JavaScript (ES6+), Tailwind CSS, Bootstrap, responsive design"
+   },
+   {
+    "id": "s2",
+    "group": "Version control and API tools",
+    "items": "Git, GitHub, Postman, Bruno, API documentation"
+   },
+   {
+    "id": "s3",
+    "group": "Tools",
+    "items": "VS Code, Chrome DevTools, Figma (basic)"
+   },
+   {
+    "id": "s4",
+    "group": "Working style",
+    "items": "Team collaboration, problem solving, clear communication, delivery under deadlines"
+   }
+  ],
+  "certs": [],
+  "cover": {
+   "recipient": "[Hiring Manager Name]",
+   "recipientTitle": "Engineering Manager",
+   "company": "PT Pusat Gadai Indonesia",
+   "hook": "Most junior candidates list Tailwind on a CV. I would rather show Pusat Gadai how I used it to bring a storefront to a Lighthouse score of [92] across three breakpoints, because a team shipping customer-facing sites needs interfaces that stay responsive under real deadlines.",
+   "body": "In my recent projects I built mobile-first layouts with Tailwind CSS and Bootstrap, kept every change in Git through reviewed pull requests, and documented [15] REST endpoints in Postman and Bruno so teammates could test without asking me. That workflow cut onboarding to [10] minutes and let our team ship [2] days early.\n\nI also know the pace your posting describes. I am comfortable with live coding, with working under strict deadlines, and with supporting night deployments when a release needs it.\n\nWhat I would bring on day one is a habit of checking my own work: I test every layout on small and large screens before opening a pull request, and I write the API notes while the endpoint is still fresh. If your team prefers a different CSS framework or documentation tool, I learn quickly, and I would rather ask a question early than miss a deadline late.",
+   "closing": "I would welcome the chance to walk you through my code in an interview. Thank you for your time and consideration."
+  }
+ },
+ {
+  "name": "CV - Junior Frontend Developer (Ordent)",
+  "target": {
+   "title": "Junior Frontend Developer",
+   "company": "Ordent",
+   "url": "https://app.semesteria.com/jobs/junior-frontend-developer-jakarta-ordent-b1849003-c06c-44f7-bbcf-ea35a6fb3ce7",
+   "jd": "Junior FrontEnd Developer - Ordent (Jakarta, onsite, full time, junior)\n\nCore requirements\n- Bachelor's degree in Computer Science or related field\n- Familiarity with HTML, CSS, JavaScript\n- Basic understanding of responsive design\n- Ability to work in a team environment\n- Strong problem-solving skills\n\nResponsibilities\n- Develop user-friendly web applications\n- Collaborate with designers to create intuitive interfaces\n- Ensure website responsiveness across devices\n- Maintain and improve existing code\n- Test and debug web applications\n- Participate in code reviews\n- Stay updated with emerging web technologies\n\nNice to have: React, Git, responsive design, UI/UX principles, basic backend knowledge\nTools: Git, Figma, VS Code, Jira, Chrome DevTools"
+  },
+  "template": {
+   "fresh": true,
+   "compact": false
+  },
+  "basics": {
+   "name": "Your Name",
+   "headline": "Junior Frontend Developer",
+   "email": "your.name@email.com",
+   "phone": "+62 812 0000 0000",
+   "location": "Your City, Indonesia",
+   "links": [
+    {
+     "label": "GitHub",
+     "url": "github.com/yourname"
+    },
+    {
+     "label": "Portfolio",
+     "url": "yourname.dev"
+    }
+   ]
+  },
+  "summary": "Computer Science student and aspiring Junior Frontend Developer focused on user-friendly, responsive web interfaces. Turns Figma designs into reusable HTML, CSS, and JavaScript components, works with designers and developers through code reviews, and debugs with Chrome DevTools. Learning React in team projects.",
+  "experience": [
+   {
+    "id": "x1",
+    "role": "[Internship / Organization Role]",
+    "org": "[Organization name]",
+    "location": "[City]",
+    "start": "[Month Year]",
+    "end": "[Month Year]",
+    "bullets": [
+     "Shipped [N] interface updates with [N] designers by turning Figma specs into responsive pages tested on [N] devices",
+     "Applied [N] code review comments across [N] pull requests to keep the shared codebase consistent and maintainable"
+    ]
+   }
+  ],
+  "projects": [
+   {
+    "id": "p1",
+    "name": "Design-to-Code Course Portal",
+    "link": "github.com/yourname/course-portal",
+    "stack": "React, CSS, Figma",
+    "bullets": [
+     "Translated [8] Figma screens into reusable React components that matched the design [95]% in designer review",
+     "Raised the mobile Lighthouse score from [68] to [90] by testing breakpoints and fixing layout issues in Chrome DevTools"
+    ]
+   },
+   {
+    "id": "p2",
+    "name": "Team Task Tracker",
+    "link": "github.com/yourname/task-tracker",
+    "stack": "JavaScript, Node.js, MySQL, Jira",
+    "bullets": [
+     "Resolved [20] bugs raised in [2] code reviews by tracing issues in Chrome DevTools and adding input validation",
+     "Planned [4] sprints in Jira with a team of [4], delivering [100]% of committed stories"
+    ]
+   }
+  ],
+  "education": [
+   {
+    "id": "e1",
+    "school": "[University Name]",
+    "degree": "Bachelor of Computer Science (expected [Year])",
+    "start": "[Year]",
+    "end": "[Year]",
+    "gpa": "GPA [3.xx]/4.00",
+    "details": "Relevant coursework: Web Programming, Data Structures, Database Systems"
+   }
+  ],
+  "skills": [
+   {
+    "id": "s1",
+    "group": "Frontend",
+    "items": "HTML5, CSS3, JavaScript (ES6+), React (fundamentals), responsive design, UI/UX principles"
+   },
+   {
+    "id": "s2",
+    "group": "Collaboration and tools",
+    "items": "Git, GitHub, Figma, Jira, VS Code, Chrome DevTools"
+   },
+   {
+    "id": "s3",
+    "group": "Backend basics",
+    "items": "REST API consumption, Node.js, MySQL"
+   },
+   {
+    "id": "s4",
+    "group": "Working style",
+    "items": "Team collaboration, problem solving, code review"
+   }
+  ],
+  "certs": [],
+  "cover": {
+   "recipient": "[Hiring Manager Name]",
+   "recipientTitle": "Frontend Lead",
+   "company": "Ordent",
+   "hook": "Ordent builds front-end solutions around user-centric design, so I want to show you how I work with designers: in my course portal project, [8] Figma screens became React components that matched the design [95]% in designer review, and I fixed the mobile layout until the Lighthouse score moved from [68] to [90].",
+   "body": "I enjoy the part of frontend work where design intent meets code. I test every layout in Chrome DevTools across devices, track work in Jira sprints, and treat code review as a way to learn: in my last project I resolved [20] bugs raised in [2] reviews.\n\nI am drawn to Ordent because your team keeps improving existing code while building new products. I want to grow in that environment, starting with React and good UI principles, and contribute reliable, responsive interfaces from my first month.\n\nMy projects also taught me to keep communication simple: I write short pull request descriptions, share design questions with the designer before coding, and update my sprint board daily so teammates always know where my work stands.",
+   "closing": "Thank you for your time. I would be glad to share my portfolio and talk about how I can support your frontend team."
+  }
+ }
+];
+const LS_KEY = 'cvforge.v1';
+const PAGE_H = 1123;
+const uid = () => Math.random().toString(36).slice(2, 9);
+const esc = s => String(s == null ? '' : s).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const $ = (s, r = document) => r.querySelector(s);
+const $$ = (s, r = document) => [...r.querySelectorAll(s)];
+
+let db = { cvs: [] };
+let ui = { view: 'list', cvId: null, tab: 'content', doc: 'cv', pane: 'edit', xyzPath: null, xyz: { x: '', y: '', z: '' }, confirmDel: null, saveState: 'idle', storageOk: true };
+let lastPageH = 0;
+
+/* ---------- persistence ---------- */
+function load() {
+  try { const r = localStorage.getItem(LS_KEY); if (r) { const p = JSON.parse(r); if (p && Array.isArray(p.cvs)) db = p; } } catch (e) { ui.storageOk = false; }
+  if (!db.cvs.length) {
+    db.cvs = SEED.map((c, i) => ({ ...JSON.parse(JSON.stringify(c)), id: uid(), updatedAt: Date.now() - i * 1000 }));
+    save(true);
+  }
+}
+let saveTimer = null;
+function save(now) {
+  const run = () => {
+    try { localStorage.setItem(LS_KEY, JSON.stringify(db)); ui.saveState = 'saved'; ui.storageOk = true; }
+    catch (e) { ui.saveState = 'nostore'; ui.storageOk = false; }
+    paintSave();
+  };
+  ui.saveState = 'saving'; paintSave();
+  clearTimeout(saveTimer);
+  if (now) run(); else saveTimer = setTimeout(run, 300);
+}
+function paintSave() {
+  const el = $('#saveState'); if (!el) return;
+  const m = { idle: '', saving: 'Menyimpan…', saved: 'Tersimpan di browser', nostore: 'Penyimpanan browser diblokir. Pakai Ekspor JSON.' };
+  el.textContent = m[ui.saveState] || '';
+  el.style.color = ui.saveState === 'nostore' ? 'var(--bad)' : 'var(--muted)';
+}
+function toast(msg) {
+  const t = $('#toast');
+  t.innerHTML = `<div class="card" style="padding:8px 12px;box-shadow:0 6px 20px rgba(0,0,0,.2)">${esc(msg)}</div>`;
+  clearTimeout(toast._t); toast._t = setTimeout(() => { t.innerHTML = ''; }, 2600);
+}
+
+/* ---------- model helpers ---------- */
+const cur = () => db.cvs.find(c => c.id === ui.cvId);
+const getPath = (o, p) => p.split('.').reduce((a, k) => a == null ? a : a[isNaN(k) ? k : +k], o);
+function setPath(o, p, v) {
+  const k = p.split('.'); let a = o;
+  for (let i = 0; i < k.length - 1; i++) a = a[isNaN(k[i]) ? k[i] : +k[i]];
+  const last = k[k.length - 1]; a[isNaN(last) ? last : +last] = v;
+}
+const blankExp = () => ({ id: uid(), role: '', org: '', location: '', start: '', end: '', bullets: [''] });
+const blankProj = () => ({ id: uid(), name: '', link: '', stack: '', bullets: [''] });
+const blankEdu = () => ({ id: uid(), school: '', degree: '', start: '', end: '', gpa: '', details: '' });
+const blankSkill = () => ({ id: uid(), group: '', items: '' });
+const blankCert = () => ({ id: uid(), name: '', issuer: '', year: '' });
+function blankCV(base) {
+  const b = base ? JSON.parse(JSON.stringify(base.basics)) : { name: '', headline: '', email: '', phone: '', location: '', links: [] };
+  return {
+    id: uid(), name: 'CV baru', updatedAt: Date.now(),
+    target: { title: '', company: '', url: '', jd: '' },
+    template: { fresh: base ? !!base.template.fresh : true, compact: false },
+    basics: b, summary: '', experience: [], projects: [],
+    education: base ? JSON.parse(JSON.stringify(base.education)) : [blankEdu()],
+    skills: base ? JSON.parse(JSON.stringify(base.skills)) : [blankSkill()], certs: [],
+    cover: { recipient: '', recipientTitle: '', company: '', hook: '', body: '', closing: 'Thank you for your time and consideration. I would welcome the chance to discuss how I can contribute.' }
+  };
+}
+function normalize(c) {
+  const d = blankCV(); const o = { ...d, ...c };
+  o.target = { ...d.target, ...(c.target || {}) }; o.template = { ...d.template, ...(c.template || {}) };
+  o.basics = { ...d.basics, ...(c.basics || {}) }; o.cover = { ...d.cover, ...(c.cover || {}) };
+  ['experience', 'projects', 'education', 'skills', 'certs'].forEach(k => { o[k] = Array.isArray(c[k]) ? c[k] : []; });
+  o.basics.links = Array.isArray(o.basics.links) ? o.basics.links : [];
+  o.id = o.id || uid(); o.updatedAt = o.updatedAt || Date.now();
+  return o;
+}
+const touch = () => { const c = cur(); if (c) { c.updatedAt = Date.now(); save(); } };
+
+/* ---------- text helpers ---------- */
+const words = s => (String(s || '').trim().match(/\S+/g) || []).length;
+const PH_RE = /\[[^\]]*\]/g;
+const phCount = s => (String(s || '').match(PH_RE) || []).length;
+const ph = s => esc(s).replace(/\[[^\]]*\]/g, m => `<mark class="ph">${m}</mark>`);
+const WEAK_RE = /^\s*(responsible for|helped|worked on|involved in|in charge of|duties (included|include)|tasked with)/i;
+const dates = (a, b) => (a && b) ? `${a} – ${b}` : (a || b || '');
+function allBullets(cv) {
+  const out = [];
+  cv.experience.forEach((e, i) => e.bullets.forEach((t, j) => out.push({ path: `experience.${i}.bullets.${j}`, text: t })));
+  cv.projects.forEach((e, i) => e.bullets.forEach((t, j) => out.push({ path: `projects.${i}.bullets.${j}`, text: t })));
+  return out;
+}
+function bulletFlags(t) {
+  const s = String(t || '').trim(); const f = [];
+  if (!s) return f;
+  if (!/\d/.test(s)) f.push(['warn', 'Belum ada angka']);
+  if (WEAK_RE.test(s)) f.push(['warn', 'Pembuka lemah']);
+  if (phCount(s)) f.push(['bad', 'Isi [..]']);
+  if (s.length > 230) f.push(['info', 'Terlalu panjang']);
+  return f;
+}
+const chips = f => f.map(([k, l]) => `<span class="chip ${k}">${esc(l)}</span>`).join(' ');
+
+function fullText(cv) {
+  const parts = [cv.basics.headline, cv.summary];
+  cv.experience.forEach(e => parts.push(e.role, e.org, ...e.bullets));
+  cv.projects.forEach(e => parts.push(e.name, e.stack, ...e.bullets));
+  cv.skills.forEach(s => parts.push(s.group, s.items));
+  cv.education.forEach(e => parts.push(e.degree, e.details));
+  cv.certs.forEach(c => parts.push(c.name));
+  return parts.filter(Boolean).join('\n');
+}
+
+/* ---------- CV rendering (HTML + plain text) ---------- */
+function orderedSections(cv) {
+  return cv.template.fresh
+    ? ['summary', 'education', 'projects', 'experience', 'skills', 'certs']
+    : ['summary', 'experience', 'projects', 'education', 'skills', 'certs'];
+}
+function contactLine(cv) {
+  const b = cv.basics;
+  const l = (b.links || []).map(x => x.url).filter(Boolean);
+  return [b.email, b.phone, b.location, ...l].filter(Boolean);
+}
+function bulletsHTML(arr) {
+  const items = arr.filter(t => String(t).trim());
+  return items.length ? `<ul>${items.map(t => `<li>${ph(t)}</li>`).join('')}</ul>` : '';
+}
+function cvHTML(cv) {
+  const b = cv.basics; const secs = [];
+  for (const s of orderedSections(cv)) {
+    if (s === 'summary' && cv.summary.trim()) secs.push(`<h2>Summary</h2><p>${ph(cv.summary)}</p>`);
+    if (s === 'education') {
+      const it = cv.education.filter(e => e.school || e.degree);
+      if (it.length) secs.push(`<h2>Education</h2>` + it.map(e => `<div class="row"><span>${ph(e.school)}</span><span class="r">${ph(dates(e.start, e.end))}</span></div>` +
+        `<div class="sub">${ph([e.degree, e.gpa].filter(Boolean).join(' | '))}</div>` + (e.details ? `<div>${ph(e.details)}</div>` : '')).join(''));
+    }
+    if (s === 'projects') {
+      const it = cv.projects.filter(e => e.name);
+      if (it.length) secs.push(`<h2>Projects</h2>` + it.map(e => `<div class="row"><span>${ph(e.name)}</span><span class="r">${ph(e.link)}</span></div>${e.stack ? `<div class="sub">${ph(e.stack)}</div>` : ''}${bulletsHTML(e.bullets)}`).join(''));
+    }
+    if (s === 'experience') {
+      const it = cv.experience.filter(e => e.role || e.org);
+      if (it.length) secs.push(`<h2>Experience</h2>` + it.map(e => `<div class="row"><span>${ph(e.role)}</span><span class="r">${ph(dates(e.start, e.end))}</span></div>` +
+        `<div class="sub">${ph([e.org, e.location].filter(Boolean).join(', '))}</div>${bulletsHTML(e.bullets)}`).join(''));
+    }
+    if (s === 'skills') {
+      const it = cv.skills.filter(e => e.items);
+      if (it.length) secs.push(`<h2>Skills</h2>` + it.map(e => `<div>${e.group ? `<b>${ph(e.group)}:</b> ` : ''}${ph(e.items)}</div>`).join(''));
+    }
+    if (s === 'certs') {
+      const it = cv.certs.filter(e => e.name);
+      if (it.length) secs.push(`<h2>Certifications</h2>` + it.map(e => `<div>${ph([e.name, e.issuer, e.year].filter(Boolean).join(', '))}</div>`).join(''));
+    }
+  }
+  return `<div class="paper${cv.template.compact ? ' compact' : ''}"><h1>${ph(b.name || 'Your Name')}</h1>` +
+    (b.headline ? `<div class="headline">${ph(b.headline)}</div>` : '') +
+    `<div class="contact">${contactLine(cv).map(ph).join(' &nbsp;|&nbsp; ')}</div>${secs.join('')}</div>`;
+}
+function cvText(cv) {
+  const b = cv.basics; const o = [b.name || 'Your Name'];
+  if (b.headline) o.push(b.headline);
+  o.push(contactLine(cv).join(' | '), '');
+  for (const s of orderedSections(cv)) {
+    if (s === 'summary' && cv.summary.trim()) o.push('SUMMARY', cv.summary, '');
+    if (s === 'education') { const it = cv.education.filter(e => e.school || e.degree); if (it.length) { o.push('EDUCATION'); it.forEach(e => { o.push(`${e.school} (${dates(e.start, e.end)})`, [e.degree, e.gpa].filter(Boolean).join(' | ')); if (e.details) o.push(e.details); }); o.push(''); } }
+    if (s === 'projects') { const it = cv.projects.filter(e => e.name); if (it.length) { o.push('PROJECTS'); it.forEach(e => { o.push([e.name, e.stack, e.link].filter(Boolean).join(' | ')); e.bullets.filter(t => t.trim()).forEach(t => o.push('- ' + t)); }); o.push(''); } }
+    if (s === 'experience') { const it = cv.experience.filter(e => e.role || e.org); if (it.length) { o.push('EXPERIENCE'); it.forEach(e => { o.push(`${e.role} (${dates(e.start, e.end)})`, [e.org, e.location].filter(Boolean).join(', ')); e.bullets.filter(t => t.trim()).forEach(t => o.push('- ' + t)); }); o.push(''); } }
+    if (s === 'skills') { const it = cv.skills.filter(e => e.items); if (it.length) { o.push('SKILLS'); it.forEach(e => o.push((e.group ? e.group + ': ' : '') + e.items)); o.push(''); } }
+    if (s === 'certs') { const it = cv.certs.filter(e => e.name); if (it.length) { o.push('CERTIFICATIONS'); it.forEach(e => o.push([e.name, e.issuer, e.year].filter(Boolean).join(', '))); o.push(''); } }
+  }
+  return o.join('\n').trim() + '\n';
+}
+
+/* ---------- cover letter ---------- */
+const todayStr = () => new Date().toLocaleDateString('en-GB', { day: 'numeric', month: 'long', year: 'numeric' });
+function letterParas(cv) {
+  const c = cv.cover; const rec = (c.recipient || '').trim();
+  const out = [`Dear ${rec || '[Hiring Manager Name]'},`];
+  if (c.hook.trim()) out.push(c.hook.trim());
+  c.body.split(/\n\s*\n/).map(s => s.trim()).filter(Boolean).forEach(p => out.push(p));
+  if (c.closing.trim()) out.push(c.closing.trim());
+  return out;
+}
+function letterHTML(cv) {
+  const b = cv.basics; const c = cv.cover; const paras = letterParas(cv);
+  const recBlock = [c.recipient, c.recipientTitle, c.company].filter(Boolean);
+  return `<div class="paper"><h1>${ph(b.name || 'Your Name')}</h1><div class="contact">${contactLine(cv).filter(x => !/^(https?:\/\/)?(www\.)?(github|linkedin|[a-z0-9-]+\.[a-z]{2,})\//i.test(x) || true).map(ph).join(' &nbsp;|&nbsp; ')}</div>` +
+    `<div class="letter" style="margin-top:26px"><p>${esc(todayStr())}</p><div class="gap"></div>` +
+    (recBlock.length ? `<p>${recBlock.map(ph).join('<br>')}</p><div class="gap"></div>` : '') +
+    paras.map(p => `<p>${ph(p).replace(/\n/g, '<br>')}</p>`).join('') +
+    `<p>Sincerely,<br>${ph(b.name || 'Your Name')}</p></div></div>`;
+}
+function letterText(cv) {
+  const c = cv.cover; const rec = [c.recipient, c.recipientTitle, c.company].filter(Boolean);
+  return [todayStr(), '', ...rec, ...(rec.length ? [''] : []), letterParas(cv).join('\n\n'), '', 'Sincerely,', cv.basics.name || 'Your Name'].join('\n') + '\n';
+}
+
+/* ---------- keyword engine (rule 2: map, never stuff) ---------- */
+const KW = [
+  ['HTML', /\bhtml5?\b/gi], ['CSS', /\bcss3?\b/gi], ['JavaScript', /\bjavascript\b|\bjs\b|\bes6\b/gi], ['TypeScript', /typescript/gi],
+  ['React', /\breact(\.?js)?\b/gi], ['Vue', /\bvue(\.?js)?\b/gi], ['Angular', /angular/gi], ['Next.js', /next\.?js/gi],
+  ['Tailwind', /tailwind/gi], ['Bootstrap', /bootstrap/gi], ['jQuery', /jquery/gi], ['Git', /\bgit(hub|lab)?\b/gi],
+  ['Postman', /postman/gi], ['Bruno', /\bbruno\b/gi], ['Figma', /figma/gi], ['Jira', /\bjira\b/gi], ['VS Code', /vs ?code|visual studio code/gi],
+  ['Chrome DevTools', /dev ?tools/gi], ['Responsive design', /responsive/gi],
+  ['UI/UX', /\bui\/ux\b|\bux\b|user[- ]friendly|user[- ]centric|usability/gi], ['Code review', /code reviews?/gi],
+  ['Debugging', /debug|troubleshoot/gi], ['Testing', /\btest(ing|s)?\b/gi], ['Agile/Scrum', /agile|scrum|sprint/gi],
+  ['REST API', /\brest(ful)?\b|\bapis?\b(?!\s+documentation)/gi], ['API documentation', /api documentation|documentation tool|swagger|openapi/gi],
+  ['SQL', /\bsql\b|mysql|postgres/gi], ['PHP/Laravel', /\bphp\b|laravel/gi], ['Node.js', /node(\.?js)?\b/gi], ['Python', /python/gi],
+  ['SEO', /\bseo\b/gi], ['Accessibility', /accessib|a11y|wcag/gi], ['Performance', /performance|optimi[sz]/gi],
+  ['Collaboration', /collaborat|team ?work|team player|cross-functional/gi], ['Communication', /communicat/gi],
+  ['Problem solving', /problem[- ]solving|analytical|critical/gi], ['Deadlines', /deadline|under pressure|fast-paced/gi],
+  ['E-commerce', /e-?commerce/gi], ['Maintenance', /maintain|maintenance/gi],
+  ['Google Analytics', /google analytics|\bga4\b/gi], ['Excel / Sheets', /excel|google sheets|spreadsheet/gi], ['Social media', /social media|instagram|tiktok/gi],
+  ['Content', /content (creation|marketing|planning)|copywriting|\bcopy\b/gi], ['Paid ads', /meta ads|google ads|facebook ads|paid (media|ads|advertising)|performance marketing/gi],
+  ['Campaigns', /campaign/gi], ['Data analysis', /data analy|analytics|metrics|reporting/gi], ['Customer service', /customer (service|support)/gi],
+  ['Project management', /project management|stakeholder/gi], ['Leadership', /leadership|lead a team/gi], ['English', /\benglish\b/gi]
+];
+const STOP = new Set('framework frameworks basic design designs applications application interfaces interface websites website users user web part full time like make high quality which their would about using within should ability experience knowledge strong good work working candidate candidates responsible company looking required requirements responsibilities qualifications skills ensure create build develop development developer junior senior position role team will have with that this from your must able also such other more than they them into over like well'.split(' '));
+function analyzeKeywords(cv) {
+  const jd = (cv.target.jd || '').trim(); if (!jd) return null;
+  const txt = fullText(cv); const items = [];
+  KW.forEach(([label, re]) => {
+    const jdHits = (jd.match(re) || []).length;
+    if (jdHits) items.push({ label, jdHits, cvHits: (txt.match(re) || []).length });
+  });
+  if (items.length < 8) {
+    const freq = {};
+    (jd.toLowerCase().match(/[a-z][a-z+#.\-]{5,}/g) || []).forEach(w => { if (!STOP.has(w)) freq[w] = (freq[w] || 0) + 1; });
+    Object.entries(freq).filter(([w, n]) => n >= 2 && !KW.some(([, re]) => (w.match(re) || []).length)).sort((a, b) => b[1] - a[1]).slice(0, 8 - items.length)
+      .forEach(([w]) => items.push({ label: w, jdHits: 2, cvHits: (txt.toLowerCase().split(w).length - 1), fallback: true }));
+  }
+  const matched = items.filter(i => i.cvHits > 0), missing = items.filter(i => !i.cvHits), stuffed = items.filter(i => !i.fallback && i.cvHits >= 7);
+  return { items, matched, missing, stuffed, coverage: items.length ? matched.length / items.length : 0 };
+}
+
+/* ---------- checklists ---------- */
+function computeChecks(cv) {
+  const out = []; const add = (id, status, label, detail) => out.push({ id, status, label, detail });
+  const bl = allBullets(cv).filter(x => x.text.trim());
+  add('format', 'pass', 'Satu kolom dan heading standar', 'Template memakai Summary, Experience, Education, Skills. Tanpa foto, ikon, tabel, atau skill bar, sehingga mudah dibaca ATS.');
+  if (lastPageH && lastPageH > PAGE_H + 2) add('page', 'warn', 'Lebih dari 1 halaman', 'Pangkas bullet yang paling lemah atau aktifkan Mode padat. CV fresh graduate idealnya 1 halaman.');
+  else add('page', 'pass', 'Muat dalam 1 halaman A4', 'Panjang sekarang pas untuk satu halaman.');
+  if (!bl.length) add('metrics', 'info', 'Angka pada bullet', 'Tambahkan bullet di Experience atau Projects, lalu beri angka.');
+  else {
+    const withNum = bl.filter(x => /\d/.test(x.text)).length; const r = withNum / bl.length;
+    add('metrics', r >= .7 ? 'pass' : 'warn', `Bullet berangka: ${withNum}/${bl.length}`, r >= .7 ? 'Dampakmu terukur. Riset di video: CV berangka dapat interview 75% lebih tinggi.' : 'Target minimal 70% bullet punya angka (waktu hemat, skor, jumlah, kecepatan). Pakai tombol XYZ di tiap bullet.');
+  }
+  const weak = bl.filter(x => WEAK_RE.test(x.text)).length;
+  add('weak', weak ? 'warn' : 'pass', weak ? `${weak} bullet berpembuka lemah` : 'Pembuka bullet kuat', weak ? 'Ganti "Responsible for / Helped / Worked on" dengan kata kerja hasil: Cut, Built, Raised, Shipped.' : 'Tidak ada "responsible for" atau "helped".');
+  const phs = phCount(fullText(cv)) + phCount(Object.values(cv.basics).filter(v => typeof v === 'string').join(' ')) + cv.basics.links.reduce((n, l) => n + phCount(l.url), 0) + cv.education.reduce((n, e) => n + phCount([e.school, e.degree, e.gpa, e.start, e.end].join(' ')), 0);
+  add('ph', phs ? 'fail' : 'pass', phs ? `${phs} bagian [..] belum diisi` : 'Tidak ada placeholder', phs ? 'Ganti semua teks dalam tanda kurung siku dengan datamu yang benar. Jangan kirim CV yang masih kuning.' : 'Semua data sudah terisi.');
+  const kw = analyzeKeywords(cv);
+  if (!kw) add('kw', 'info', 'Kecocokan keyword', 'Tempel deskripsi lowongan di tab Lowongan untuk melihat keyword yang cocok dan yang belum ada.');
+  else {
+    const pct = Math.round(kw.coverage * 100);
+    if (pct < 50) add('kw', 'warn', `Keyword cocok ${pct}%`, 'Masih rendah. Tambahkan keyword yang memang sudah kamu kerjakan, jangan yang tidak.');
+    else if (kw.stuffed.length) add('kw', 'warn', `Keyword cocok ${pct}%, ada yang diulang terlalu sering`, 'Di riset video, CV dengan keyword paling banyak malah 21% lebih jarang dipanggil. Pastikan tiap keyword punya bukti nyata.');
+    else add('kw', 'pass', `Keyword cocok ${pct}%`, pct > 85 ? 'Sangat cocok. Pastikan tiap keyword punya bukti nyata di bullet, bukan hanya disebut.' : 'Di zona moderat yang sehat: cocok dengan lowongan tanpa terlihat dijejali.');
+  }
+  if (cv.target.title) {
+    const t = cv.target.title.toLowerCase(); const hit = (cv.basics.headline + ' ' + cv.summary).toLowerCase().includes(t);
+    add('role', hit ? 'pass' : 'warn', hit ? 'Judul posisi muncul di atas' : 'Judul posisi belum disebut', hit ? 'Perekrut langsung melihat kecocokan.' : `Sebut "${cv.target.title}" di headline atau Summary agar kecocokan terlihat jelas (Rule 2).`);
+  }
+  const sw = words(cv.summary);
+  add('summary', (sw >= 25 && sw <= 70) ? 'pass' : 'warn', `Summary ${sw} kata`, (sw >= 25 && sw <= 70) ? 'Panjang ideal 2 sampai 3 kalimat.' : 'Tulis 2 sampai 3 kalimat (25 sampai 70 kata) yang menyebut posisi, keahlian inti, dan satu hasil.');
+  const hasLink = cv.basics.links.some(l => l.url.trim()) || cv.projects.some(p => p.link.trim());
+  add('proof', hasLink ? 'pass' : 'warn', hasLink ? 'Ada link bukti' : 'Belum ada link portofolio atau GitHub', hasLink ? 'Perekrut bisa memeriksa karyamu (Rule 5).' : 'Tambahkan GitHub, portofolio, atau link proyek agar klaimmu bisa dicek.');
+  const b = cv.basics; const emailOk = /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(b.email || '') || phCount(b.email);
+  const locBad = /\d/.test(b.location || '') && !phCount(b.location) || (b.location || '').split(',').length > 2;
+  add('contact', (emailOk && b.phone && !locBad) ? 'pass' : 'warn', 'Kontak dan privasi', locBad ? 'Cukup kota dan negara. Alamat jalan lengkap tidak perlu dan berisiko diskriminasi.' : (emailOk && b.phone ? 'Email dan telepon ada, lokasi hanya kota.' : 'Lengkapi email yang valid dan nomor telepon.'));
+  const t = fullText(cv); const aiAll = /\b(ai|chatgpt|claude|copilot|gemini|llm)\b/i.test(t); const aiB = bl.some(x => /\b(ai|chatgpt|claude|copilot|gemini|llm)\b/i.test(x.text) && /\d/.test(x.text));
+  if (aiAll && !aiB) add('ai', 'warn', 'Skill AI belum dibuktikan', 'Menulis "ChatGPT" di Skills tidak cukup. Tunjukkan satu bullet berangka tentang masalah yang kamu selesaikan dengan AI.');
+  else if (aiB) add('ai', 'pass', 'Skill AI dibuktikan dengan hasil', 'Bagus: ada bullet AI yang terukur.');
+  else add('ai', 'info', 'Bukti skill AI (opsional)', 'Jika relevan, buat proyek kecil dengan AI untuk masalah yang dihadapi posisi ini, lalu tautkan di Projects.');
+  return out;
+}
+const score = checks => { const c = checks.filter(x => x.status !== 'info'); return { ok: c.filter(x => x.status === 'pass').length, total: c.length }; };
+
+function computeCoverChecks(cv) {
+  const c = cv.cover; const out = []; const add = (status, label, detail) => out.push({ status, label, detail });
+  const rec = (c.recipient || '').trim();
+  const generic = /^(hiring manager|recruiter|team|sir|madam|sir\/madam|to whom|hr)/i.test(rec) || /\[.*\]/.test(rec);
+  add(!rec ? 'fail' : (generic ? 'warn' : 'pass'), 'Ditujukan ke orang sungguhan',
+    !rec ? 'Kesalahan #1: tulis nama manajer yang merekrut. Cari di LinkedIn dengan nama perusahaan + judul posisi.' : (generic ? 'Masih generik atau placeholder. Cari nama manajer atau orang paling senior di tim itu.' : 'Menunjukkan kamu meriset perusahaan.'));
+  const all = [c.hook, c.body, c.closing].join(' ');
+  const proof = (all.match(/\b(ai|chatgpt)\b/i), 0);
+  const ph2 = phCount(all) + phCount(rec);
+  add(ph2 ? 'fail' : 'pass', ph2 ? `${ph2} bagian [..] belum diisi` : 'Tidak ada placeholder', ph2 ? 'Isi semua bagian dalam kurung siku sebelum mengirim.' : 'Semua terisi.');
+  const hk = c.hook.trim(); const hookGeneric = /^(i am|i'm|i would like|i want) (writing|applying|to apply)|^i am (very )?(excited|interested)/i.test(hk);
+  const hookCo = c.company && hk.toLowerCase().includes(c.company.toLowerCase().replace(/^pt\.?\s+/i, '').split(' ')[0]);
+  if (!hk) add('fail', 'Hook belum ditulis', 'Kesalahan #3: habiskan sekitar 50% waktumu di paragraf pembuka.');
+  else if (hookGeneric) add('warn', 'Hook terdengar generik', 'Jangan buka dengan "I am applying for…". Buka dengan wawasan tentang perusahaan atau hasil nyatamu.');
+  else add(hookCo || words(hk) >= 25 ? 'pass' : 'warn', hookCo ? 'Hook spesifik untuk perusahaan' : 'Hook cukup, tapi bisa lebih spesifik', hookCo ? 'Menyebut perusahaan dan sudut pandangmu.' : 'Jika hook bisa dipakai untuk perusahaan lain, tulis ulang dengan detail perusahaan ini.');
+  const hasNum = /\d/.test(c.hook + ' ' + c.body);
+  add(hasNum ? 'pass' : 'warn', hasNum ? 'Ada hasil berangka' : 'Belum ada hasil berangka', hasNum ? 'Kesalahan #4 terhindari: dampak terlihat nyata.' : 'Ganti klaim kabur dengan hasil berangka, contoh "skor kepuasan 96% vs target 85%".');
+  const wc = words(letterParas(cv).slice(1).join(' '));
+  add((wc >= 180 && wc <= 380) ? 'pass' : 'warn', `Panjang ${wc} kata`, (wc >= 180 && wc <= 380) ? 'Muat satu halaman dan tetap padat.' : (wc > 380 ? 'Terlalu panjang. Jaga di bawah 1 halaman (sekitar 350 kata).' : 'Terlalu singkat untuk meyakinkan. Tambahkan satu bukti dan alasan memilih perusahaan ini.'));
+  const addr = /\b(jl\.?|jalan)\s|\bno\.?\s?\d|\brt\s?\d|\brw\s?\d/i.test(all + ' ' + cv.basics.location);
+  const acr = [...new Set((all.match(/\b[A-Z]{3,6}\b/g) || []).filter(a => !['API', 'CSS', 'HTML', 'PDF', 'GPA', 'SQL', 'REST'].includes(a)))];
+  add((addr || acr.length > 3) ? 'warn' : 'pass', 'Kebersihan surat', addr ? 'Hapus alamat jalan lengkap.' : (acr.length > 3 ? 'Terlalu banyak singkatan: ' + acr.slice(0, 5).join(', ') + '. Tulis lengkap atau buang.' : 'Tanpa data pribadi berlebih dan jargon.'));
+  out.push({ status: 'info', label: 'Cek typo sebelum kirim', detail: '80% perekrut menganggap salah ketik sebagai deal-breaker (kesalahan #2). Minta satu teman membacanya, atau minta AI memperbaiki ejaan tanpa mengubah isi.' });
+  return out;
+}
+const statusIcon = { pass: '✓', warn: '!', fail: '✕', info: 'i' };
+const statusHTML = c => `<div class="status ${c.status}"><span class="mono" style="min-width:14px;font-weight:600">${statusIcon[c.status]}</span><div><b>${esc(c.label)}</b><div style="opacity:.92">${esc(c.detail)}</div></div></div>`;
+
+/* ---------- editor field builders ---------- */
+const idOf = p => 'f_' + p.replace(/\./g, '_');
+function fld(label, path, opts = {}) {
+  const cv = cur(); const v = getPath(cv, path) ?? '';
+  const type = opts.type || 'text'; const id = idOf(path);
+  const ctl = type === 'textarea'
+    ? `<textarea class="inp" id="${id}" data-path="${path}" rows="${opts.rows || 2}" placeholder="${esc(opts.ph || '')}">${esc(v)}</textarea>`
+    : `<input class="inp" id="${id}" data-path="${path}" type="text" value="${esc(v)}" placeholder="${esc(opts.ph || '')}" autocomplete="off">`;
+  return `<div style="${opts.style || ''}"><label class="lbl" for="${id}">${esc(label)}</label>${ctl}</div>`;
+}
+function itemTools(listPath, i, len) {
+  return `<div class="flex gap-1 items-center">
+    <button class="btn btn-ghost" data-action="mv" data-path="${listPath}.${i}" data-dir="-1" ${i === 0 ? 'disabled style="opacity:.35"' : ''} aria-label="Naik">↑</button>
+    <button class="btn btn-ghost" data-action="mv" data-path="${listPath}.${i}" data-dir="1" ${i === len - 1 ? 'disabled style="opacity:.35"' : ''} aria-label="Turun">↓</button>
+    <button class="btn btn-ghost" data-action="rm" data-path="${listPath}.${i}" aria-label="Hapus item" style="color:var(--bad)">Hapus</button></div>`;
+}
+function bulletRow(path, text) {
+  const open = ui.xyzPath === path;
+  return `<div class="bullet" data-bullet="${path}">
+    <div class="flex gap-2 items-start">
+      <textarea class="inp" id="${idOf(path)}" data-path="${path}" rows="1" placeholder="Hasil terukur, contoh: Cut load time by 38% by lazy-loading images">${esc(text)}</textarea>
+      <div class="flex flex-col gap-1">
+        <button class="btn" data-action="xyz" data-path="${path}" title="Susun bullet dengan rumus Google XYZ" aria-expanded="${open}">XYZ</button>
+        <button class="btn btn-ghost" data-action="rm-bullet" data-path="${path}" aria-label="Hapus bullet">✕</button>
+      </div>
+    </div>
+    <div class="flex gap-1 flex-wrap" style="margin:4px 0 0;min-height:4px" data-badge="${path}">${chips(bulletFlags(text))}</div>
+    ${open ? `<div class="card" style="padding:10px;margin:6px 0 4px;background:var(--accent-soft);border-color:var(--accent)">
+      <div class="hint" style="margin-bottom:6px">Rumus Google: capai <b>X</b>, diukur dengan <b>Y</b>, dengan cara <b>Z</b>. Isi hanya fakta yang bisa kamu buktikan.</div>
+      <div class="grid gap-2" style="grid-template-columns:repeat(auto-fit,minmax(150px,1fr))">
+        <div><label class="lbl" for="xyz_x">X: hasil</label><input class="inp" id="xyz_x" data-xyz="x" value="${esc(ui.xyz.x)}" placeholder="Cut page load time"></div>
+        <div><label class="lbl" for="xyz_y">Y: ukuran</label><input class="inp" id="xyz_y" data-xyz="y" value="${esc(ui.xyz.y)}" placeholder="by 38% (61 to 89 Lighthouse)"></div>
+        <div><label class="lbl" for="xyz_z">Z: caranya</label><input class="inp" id="xyz_z" data-xyz="z" value="${esc(ui.xyz.z)}" placeholder="by lazy-loading images"></div>
+      </div>
+      <div class="flex gap-2" style="margin-top:8px"><button class="btn btn-primary" data-action="xyz-apply" data-path="${path}">Pakai sebagai bullet</button><button class="btn" data-action="xyz" data-path="${path}">Tutup</button></div></div>` : ''}
+  </div>`;
+}
+function bulletsBlock(listPath, arr) {
+  return `<div class="grid gap-2" style="margin-top:8px"><span class="lbl" style="margin:0">Bullet</span>${arr.map((t, j) => bulletRow(`${listPath}.${j}`, t)).join('')}
+    <div><button class="btn" data-action="add-bullet" data-path="${listPath}">+ Bullet</button></div></div>`;
+}
+function section(title, hint, addAction, addLabel, body) {
+  return `<section class="card" style="padding:14px"><div class="flex justify-between items-start gap-2 flex-wrap"><div><h3 class="sec-title">${title}</h3>${hint ? `<div class="hint">${hint}</div>` : ''}</div>${addAction ? `<button class="btn" data-action="add" data-path="${addAction}">${addLabel}</button>` : ''}</div><div class="grid gap-3" style="margin-top:10px">${body}</div></section>`;
+}
+const itemCard = (inner) => `<div class="card" style="padding:12px;background:var(--bg)">${inner}</div>`;
+const empty = t => `<div class="hint" style="padding:8px 0">${t}</div>`;
+
+function tabContent(cv) {
+  const links = cv.basics.links.map((l, i) => `<div class="flex gap-2 items-end"><div style="flex:0 0 120px">${fld('Label', `basics.links.${i}.label`, { ph: 'GitHub' })}</div><div style="flex:1;min-width:0">${fld('URL', `basics.links.${i}.url`, { ph: 'github.com/nama' })}</div><button class="btn btn-ghost" data-action="rm" data-path="basics.links.${i}" style="color:var(--bad)" aria-label="Hapus link">✕</button></div>`).join('');
+  const basics = section('Data diri', 'Cukup kota dan negara untuk lokasi. Alamat jalan tidak perlu.', 'basics.links', '+ Link', `
+    <div class="grid gap-2" style="grid-template-columns:repeat(auto-fit,minmax(200px,1fr))">${fld('Nama lengkap', 'basics.name')}${fld('Headline (judul posisi)', 'basics.headline', { ph: 'Junior Frontend Developer' })}${fld('Email', 'basics.email')}${fld('Telepon', 'basics.phone')}${fld('Lokasi', 'basics.location', { ph: 'Jakarta, Indonesia' })}</div>
+    ${links || empty('Tambahkan GitHub atau portofolio agar klaimmu bisa dicek.')}`);
+  const layout = section('Tata letak', 'Satu kolom, font Arial, tanpa dekorasi. Itu disengaja.', '', '', `
+    <label class="flex gap-2 items-start"><input type="checkbox" id="opt_fresh" data-bool="template.fresh" ${cv.template.fresh ? 'checked' : ''} style="margin-top:3px"><span><b>Fresh graduate</b>: Education dan Projects di atas Experience.<div class="hint">Matikan jika sudah punya pengalaman kerja relevan; 86% perekrut lebih menghargai pengalaman daripada pendidikan.</div></span></label>
+    <label class="flex gap-2 items-start"><input type="checkbox" id="opt_compact" data-bool="template.compact" ${cv.template.compact ? 'checked' : ''} style="margin-top:3px"><span><b>Mode padat</b>: font dan margin lebih kecil agar muat 1 halaman.</span></label>`);
+  const summary = section('Summary', '2 sampai 3 kalimat: posisi targetmu, keahlian inti, satu hasil.', '', '', `${fld('Summary', 'summary', { type: 'textarea', rows: 4 })}<div class="hint" id="sumCount"></div>`);
+  const exp = section('Experience', 'Magang, organisasi, freelance. Mulai tiap bullet dengan kata kerja hasil.', 'experience', '+ Pengalaman',
+    cv.experience.length ? cv.experience.map((e, i) => itemCard(`<div class="flex justify-between items-center gap-2"><b>${esc(e.role || 'Pengalaman baru')}</b>${itemTools('experience', i, cv.experience.length)}</div>
+      <div class="grid gap-2" style="grid-template-columns:repeat(auto-fit,minmax(170px,1fr));margin-top:8px">${fld('Posisi', `experience.${i}.role`)}${fld('Organisasi', `experience.${i}.org`)}${fld('Lokasi', `experience.${i}.location`)}${fld('Mulai', `experience.${i}.start`, { ph: 'Jun 2025' })}${fld('Selesai', `experience.${i}.end`, { ph: 'Present' })}</div>${bulletsBlock(`experience.${i}.bullets`, e.bullets)}`)).join('') : empty('Belum ada. Fresh graduate boleh mengosongkan ini dan memakai Projects.'));
+  const proj = section('Projects', 'Bukti nyata. Taruh link supaya perekrut bisa memeriksa.', 'projects', '+ Proyek',
+    cv.projects.length ? cv.projects.map((e, i) => itemCard(`<div class="flex justify-between items-center gap-2"><b>${esc(e.name || 'Proyek baru')}</b>${itemTools('projects', i, cv.projects.length)}</div>
+      <div class="grid gap-2" style="grid-template-columns:repeat(auto-fit,minmax(170px,1fr));margin-top:8px">${fld('Nama proyek', `projects.${i}.name`)}${fld('Tech stack', `projects.${i}.stack`)}${fld('Link', `projects.${i}.link`)}</div>${bulletsBlock(`projects.${i}.bullets`, e.bullets)}`)).join('') : empty('Belum ada proyek.'));
+  const edu = section('Education', '', 'education', '+ Pendidikan',
+    cv.education.length ? cv.education.map((e, i) => itemCard(`<div class="flex justify-between items-center gap-2"><b>${esc(e.school || 'Pendidikan baru')}</b>${itemTools('education', i, cv.education.length)}</div>
+      <div class="grid gap-2" style="grid-template-columns:repeat(auto-fit,minmax(170px,1fr));margin-top:8px">${fld('Institusi', `education.${i}.school`)}${fld('Gelar / jurusan', `education.${i}.degree`)}${fld('IPK', `education.${i}.gpa`)}${fld('Mulai', `education.${i}.start`)}${fld('Selesai', `education.${i}.end`)}</div><div style="margin-top:8px">${fld('Detail (mata kuliah relevan, penghargaan)', `education.${i}.details`)}</div>`)).join('') : empty('Belum ada.'));
+  const skills = section('Skills', 'Tulis nama skill sebagai teks. Hindari skill bar karena tidak terbaca ATS.', 'skills', '+ Grup skill',
+    cv.skills.length ? cv.skills.map((e, i) => itemCard(`<div class="flex justify-between items-center gap-2"><b>${esc(e.group || 'Grup baru')}</b>${itemTools('skills', i, cv.skills.length)}</div>
+      <div class="grid gap-2" style="grid-template-columns:minmax(120px,1fr) 3fr;margin-top:8px">${fld('Grup', `skills.${i}.group`, { ph: 'Frontend' })}${fld('Skill (pisahkan koma)', `skills.${i}.items`, { ph: 'HTML5, CSS3, JavaScript' })}</div>`)).join('') : empty('Belum ada.'));
+  const certs = section('Certifications', 'Opsional.', 'certs', '+ Sertifikat',
+    cv.certs.length ? cv.certs.map((e, i) => itemCard(`<div class="flex justify-between items-center gap-2"><b>${esc(e.name || 'Sertifikat baru')}</b>${itemTools('certs', i, cv.certs.length)}</div>
+      <div class="grid gap-2" style="grid-template-columns:repeat(auto-fit,minmax(170px,1fr));margin-top:8px">${fld('Nama', `certs.${i}.name`)}${fld('Penerbit', `certs.${i}.issuer`)}${fld('Tahun', `certs.${i}.year`)}</div>`)).join('') : empty('Belum ada.'));
+  return `<div class="grid gap-3">${basics}${layout}${summary}${cv.template.fresh ? edu + proj + exp : exp + proj + edu}${skills}${certs}</div>`;
+}
+function kwPanelHTML(cv) {
+  const k = analyzeKeywords(cv);
+  if (!k) return `<div class="status info"><span class="mono">i</span><div><b>Belum ada deskripsi lowongan</b><div>Tempel isi lowongan di atas. Kamu akan melihat keyword mana yang sudah cocok dan mana yang belum.</div></div></div>`;
+  const pct = Math.round(k.coverage * 100);
+  const zone = pct < 50 ? ['warn', 'Masih rendah'] : (k.stuffed.length ? ['warn', 'Ada keyword terlalu sering diulang'] : (pct > 85 ? ['good', 'Sangat cocok, pastikan ada buktinya'] : ['good', 'Zona sehat (moderat)']));
+  return `<div class="flex justify-between items-baseline gap-2 flex-wrap"><b style="font-size:15px">Kecocokan keyword: ${pct}%</b><span class="chip ${zone[0]}">${zone[1]}</span></div>
+    <div class="meter" style="margin:8px 0 4px" aria-hidden="true"><span class="zone" style="left:50%;width:35%"></span><i style="width:${pct}%"></i></div>
+    <div class="hint">Area hijau muda adalah zona moderat (50 sampai 85%). Skor tinggi baik asal tiap keyword ada buktinya; riset menunjukkan CV yang menjejalkan keyword paling banyak justru 21% lebih jarang dipanggil.</div>
+    <div style="margin-top:12px"><span class="lbl">Sudah ada di CV (${k.matched.length})</span><div class="flex gap-1 flex-wrap">${k.matched.map(i => `<span class="chip good">${esc(i.label)}${i.cvHits >= 7 ? ' ×' + i.cvHits : ''}</span>`).join('') || '<span class="hint">Belum ada.</span>'}</div></div>
+    <div style="margin-top:10px"><span class="lbl">Belum ada (${k.missing.length})</span><div class="flex gap-1 flex-wrap">${k.missing.map(i => `<span class="chip warn">${esc(i.label)}</span>`).join('') || '<span class="hint">Semua tercakup.</span>'}</div>
+    <div class="hint" style="margin-top:6px">Tambahkan hanya yang benar-benar pernah kamu kerjakan (langkah 3: cek setiap saran).</div></div>
+    ${k.stuffed.length ? `<div class="status warn" style="margin-top:10px"><span class="mono">!</span><div><b>Diulang terlalu sering:</b> ${k.stuffed.map(i => esc(i.label)).join(', ')}. Sebutkan sekali di tempat yang paling kuat.</div></div>` : ''}`;
+}
+function tabTarget(cv) {
+  return `<div class="grid gap-3"><section class="card" style="padding:14px"><h3 class="sec-title">Lowongan yang dituju</h3><div class="hint">Satu CV untuk satu lowongan. Duplikat CV ini dari daftar untuk melamar ke tempat lain.</div>
+    <div class="grid gap-2" style="grid-template-columns:repeat(auto-fit,minmax(200px,1fr));margin-top:10px">${fld('Judul posisi', 'target.title', { ph: 'Junior Frontend Developer' })}${fld('Perusahaan', 'target.company')}</div>
+    <div style="margin-top:8px">${fld('Link lowongan', 'target.url')}</div>
+    <div style="margin-top:8px">${fld('Deskripsi lowongan (tempel di sini)', 'target.jd', { type: 'textarea', rows: 9 })}</div></section>
+    <section class="card" style="padding:14px"><h3 class="sec-title">Analisis keyword</h3><div id="kwPanel" style="margin-top:8px">${kwPanelHTML(cv)}</div></section>
+    <section class="card" style="padding:14px"><h3 class="sec-title">Cara menyesuaikan tanpa menjejalkan</h3><ol style="margin:8px 0 0;padding-left:20px;list-style:decimal" class="hint"><li>Cari masalah yang mau diselesaikan perusahaan dari deskripsi lowongan.</li><li>Petakan keyword ke pekerjaan yang benar-benar pernah kamu lakukan.</li><li>Cek setiap saran; buang yang tidak bisa kamu buktikan.</li></ol></section></div>`;
+}
+function tabCover(cv) {
+  return `<div class="grid gap-3"><section class="card" style="padding:14px"><h3 class="sec-title">Cover letter</h3><div class="hint">Surat ini melengkapi CV, bukan mengulangnya. Cukup satu halaman.</div>
+    <div class="grid gap-2" style="grid-template-columns:repeat(auto-fit,minmax(200px,1fr));margin-top:10px">${fld('Nama penerima (manajer perekrut)', 'cover.recipient', { ph: 'Ms. Sari Wulandari' })}${fld('Jabatan penerima', 'cover.recipientTitle', { ph: 'Engineering Manager' })}${fld('Perusahaan', 'cover.company')}</div>
+    <div style="margin-top:8px">${fld('Hook (paragraf 1). Habiskan sekitar 50% waktumu di sini.', 'cover.hook', { type: 'textarea', rows: 5 })}</div>
+    <div style="margin-top:8px">${fld('Isi: bukti berangka dan alasan memilih perusahaan ini (pisahkan paragraf dengan baris kosong)', 'cover.body', { type: 'textarea', rows: 9 })}</div>
+    <div style="margin-top:8px">${fld('Penutup', 'cover.closing', { type: 'textarea', rows: 3 })}</div></section>
+    <section class="card" style="padding:14px"><h3 class="sec-title">Pemeriksaan</h3><div id="clPanel" class="grid gap-2" style="margin-top:8px">${computeCoverChecks(cv).map(statusHTML).join('')}</div></section></div>`;
+}
+function tabCheck(cv) {
+  const ch = computeChecks(cv);
+  return `<div class="grid gap-3"><section class="card" style="padding:14px"><h3 class="sec-title">Checklist CV era AI</h3><div class="hint">Dihitung langsung dari isi CV-mu. Hijau berarti lolos.</div><div id="checkPanel" class="grid gap-2" style="margin-top:10px">${ch.map(statusHTML).join('')}</div></section>
+    <section class="card" style="padding:14px"><h3 class="sec-title">Sebelum kirim</h3><ol class="hint" style="margin:8px 0 0;padding-left:20px;list-style:decimal"><li>Klik <b>Cetak / PDF</b>, pilih <i>Save as PDF</i>, margin <i>None</i>, matikan <i>Headers and footers</i>.</li><li>Buka PDF-nya dan coba blok teks. Jika teks bisa disalin, ATS bisa membacanya. Ukuran idealnya di bawah 2,5 MB.</li><li>Minta satu orang membaca ulang untuk typo.</li><li>Pastikan tidak ada bagian kuning (placeholder).</li></ol></section></div>`;
+}
+function editorHTML(cv) {
+  const t = ui.tab;
+  return `<div class="grid gap-3">${t === 'content' ? tabContent(cv) : t === 'target' ? tabTarget(cv) : t === 'cover' ? tabCover(cv) : tabCheck(cv)}</div>`;
+}
+
+/* ---------- views ---------- */
+function headerHTML(inner) {
+  return `<header style="background:var(--surface);border-bottom:1px solid var(--line);position:sticky;top:0;z-index:20"><div class="flex items-center gap-3 flex-wrap" style="padding:10px 16px;max-width:1500px;margin:0 auto">
+    <div class="flex items-baseline gap-2"><h1 style="font-size:20px;letter-spacing:-.01em">CV Forge</h1><span class="hint" style="display:none" id="tagline">generator CV ramah ATS</span></div>${inner}</div></header>`;
+}
+function renderList() {
+  const cvs = [...db.cvs].sort((a, b) => b.updatedAt - a.updatedAt);
+  const cards = cvs.map(c => {
+    const sc = score(computeChecks(c)); const del = ui.confirmDel === c.id;
+    const pct = sc.total ? sc.ok / sc.total : 0;
+    return `<article class="card" style="padding:14px;display:flex;flex-direction:column;gap:10px">
+      <div><h3 style="font-size:17px;line-height:1.25">${esc(c.name)}</h3><div class="hint">${esc(c.target.title || 'Tanpa target')}${c.target.company ? ' @ ' + esc(c.target.company) : ''}</div></div>
+      <div><div class="flex justify-between hint"><span>Checklist</span><span class="mono">${sc.ok}/${sc.total}</span></div><div class="meter" style="margin-top:4px"><i style="width:${Math.round(pct * 100)}%"></i></div></div>
+      <div class="hint mono" style="font-size:11.5px">Diubah ${new Date(c.updatedAt).toLocaleString('id-ID', { dateStyle: 'medium', timeStyle: 'short' })}</div>
+      <div class="flex gap-2 flex-wrap" style="margin-top:auto"><button class="btn btn-primary" data-action="open" data-id="${c.id}">Buka</button>
+        <button class="btn" data-action="dup" data-id="${c.id}" title="Salin untuk melamar ke lowongan lain">Duplikat</button>
+        <button class="btn ${del ? 'btn-danger' : 'btn-ghost'}" data-action="del" data-id="${c.id}">${del ? 'Yakin hapus?' : 'Hapus'}</button></div></article>`;
+  }).join('');
+  $('#app').innerHTML = headerHTML(`<div class="flex gap-2 flex-wrap" style="margin-left:auto"><button class="btn" data-action="import">Impor JSON</button><button class="btn" data-action="export-all">Ekspor semua</button><button class="btn btn-primary" data-action="new">+ CV baru</button></div>`) +
+    `<main style="max-width:1100px;margin:0 auto;padding:22px 16px 60px"><div class="flex items-end justify-between gap-3 flex-wrap" style="margin-bottom:14px"><div><h2 style="font-size:26px;letter-spacing:-.01em">CV kamu</h2><div class="hint">${db.cvs.length} CV tersimpan di browser ini. ${ui.storageOk ? '' : '<b style="color:var(--bad)">Penyimpanan browser diblokir, ekspor JSON agar tidak hilang.</b>'}</div></div></div>
+    <div class="grid gap-3" style="grid-template-columns:repeat(auto-fill,minmax(270px,1fr))">${cards}</div>
+    <div class="hint" style="margin-top:18px">Tip: satu CV per lowongan. Tekan Duplikat, lalu ganti target dan bullet agar cocok dengan lowongan baru. Data tersimpan di browser ini saja; pakai Ekspor semua untuk cadangan.</div></main>`;
+}
+function renderEdit() {
+  const cv = cur(); if (!cv) { ui.view = 'list'; return renderList(); }
+  const tabs = [['content', 'Isi CV'], ['target', 'Lowongan'], ['cover', 'Cover letter'], ['check', 'Checklist']];
+  const sc = score(computeChecks(cv));
+  $('#app').innerHTML = headerHTML(`<button class="btn btn-ghost" data-action="back">← Semua CV</button>
+    <input class="inp" id="cvName" data-path="name" value="${esc(cv.name)}" aria-label="Nama CV" style="max-width:300px;font-weight:600">
+    <span class="hint" id="saveState"></span>
+    <button class="chip ${sc.ok === sc.total ? 'good' : 'warn'} mono" id="scorePill" data-action="tab" data-tab="check" style="border:0;margin-left:auto" title="Buka checklist">Checklist ${sc.ok}/${sc.total}</button>`) +
+    `<div class="lg:hidden flex" style="padding:8px 16px 0;gap:8px"><button class="btn ${ui.pane === 'edit' ? 'btn-primary' : ''}" data-action="pane" data-pane="edit" style="flex:1">Edit</button><button class="btn ${ui.pane === 'preview' ? 'btn-primary' : ''}" data-action="pane" data-pane="preview" style="flex:1">Preview</button></div>
+    <main class="grid" style="max-width:1500px;margin:0 auto;padding:14px 16px 60px;gap:18px;grid-template-columns:minmax(0,1fr)" id="workbench">
+      <div id="editPane" class="${ui.pane === 'edit' ? '' : 'hidden'} lg:block" style="min-width:0">
+        <div role="tablist" class="flex" style="border-bottom:1px solid var(--line);margin-bottom:12px;overflow-x:auto">${tabs.map(([k, l]) => `<button role="tab" class="tab" aria-selected="${ui.tab === k}" data-action="tab" data-tab="${k}">${l}</button>`).join('')}</div>
+        <div id="editor">${editorHTML(cv)}</div></div>
+      <div id="previewPane" class="${ui.pane === 'preview' ? '' : 'hidden'} lg:block" style="min-width:0"><div style="position:sticky;top:64px">
+        <div class="flex gap-2 flex-wrap items-center" style="margin-bottom:8px">
+          <div class="flex" role="group" aria-label="Dokumen"><button class="btn ${ui.doc === 'cv' ? 'btn-primary' : ''}" data-action="doc" data-doc="cv">CV</button><button class="btn ${ui.doc === 'cl' ? 'btn-primary' : ''}" data-action="doc" data-doc="cl">Cover letter</button></div>
+          <button class="btn btn-primary" data-action="print" title="Di dialog cetak pilih Save as PDF, margin None">Cetak / PDF</button>
+          <button class="btn" data-action="copy-text">Salin teks</button><button class="btn" data-action="export-one">Ekspor JSON</button></div>
+        <div id="deskScroll" style="max-height:calc(100vh - 130px);overflow:auto;background:var(--bg)"><div class="desk"><div class="pv-wrap" id="pvCV"></div><div class="pv-wrap" id="pvCL" style="display:none"></div></div></div></div></div></main>`;
+  document.getElementById('tagline').style.display = '';
+  const wb = $('#workbench'); applyGrid(); paintSave(); afterEditorRender(); refreshPreview();
+  if (window.ResizeObserver) { if (renderEdit._ro) renderEdit._ro.disconnect(); renderEdit._ro = new ResizeObserver(() => { applyGrid(); fitPreview(); }); renderEdit._ro.observe($('#deskScroll')); }
+}
+function applyGrid() { const wb = $('#workbench'); if (wb) wb.style.gridTemplateColumns = window.innerWidth >= 1024 ? 'minmax(0,540px) minmax(0,1fr)' : 'minmax(0,1fr)'; }
+function afterEditorRender() {
+  $$('#editor textarea.inp').forEach(autosize);
+  const s = $('#sumCount'); const cv = cur(); if (s && cv) s.textContent = `${words(cv.summary)} kata`;
+}
+function autosize(el) { el.style.height = 'auto'; el.style.height = Math.min(el.scrollHeight + 2, 420) + 'px'; }
+
+/* ---------- preview + insights ---------- */
+function fitPreview() {
+  $$('.pv-wrap').forEach(w => {
+    const p = w.firstElementChild; if (!p) return;
+    const avail = Math.max(280, ($('#deskScroll') ? $('#deskScroll').clientWidth : 794) - 4);
+    const k = Math.min(1, avail / 794);
+    p.style.transform = `scale(${k})`; w.style.width = Math.round(794 * k) + 'px'; w.style.height = Math.round(p.offsetHeight * k) + 'px';
+  });
+}
+function refreshPreview() {
+  const cv = cur(); if (!cv) return;
+  const a = $('#pvCV'), b = $('#pvCL'); if (!a || !b) return;
+  a.innerHTML = cvHTML(cv); b.innerHTML = letterHTML(cv);
+  a.style.display = ui.doc === 'cv' ? '' : 'none'; b.style.display = ui.doc === 'cl' ? '' : 'none';
+  $('#measure').innerHTML = cvHTML(cv); lastPageH = $('#measure').firstElementChild.offsetHeight;
+  $('#printRoot').innerHTML = ui.doc === 'cv' ? cvHTML(cv) : letterHTML(cv);
+  fitPreview();
+}
+function refreshInsights() {
+  const cv = cur(); if (!cv) return;
+  allBullets(cv).forEach(b => { const el = document.querySelector(`[data-badge="${b.path}"]`); if (el) el.innerHTML = chips(bulletFlags(b.text)); });
+  const kp = $('#kwPanel'); if (kp) kp.innerHTML = kwPanelHTML(cv);
+  const cl = $('#clPanel'); if (cl) cl.innerHTML = computeCoverChecks(cv).map(statusHTML).join('');
+  const cp = $('#checkPanel'); const ch = computeChecks(cv); if (cp) cp.innerHTML = ch.map(statusHTML).join('');
+  const sc = score(ch); const pill = $('#scorePill'); if (pill) { pill.textContent = `Checklist ${sc.ok}/${sc.total}`; pill.className = `chip ${sc.ok === sc.total ? 'good' : 'warn'} mono`; }
+  const s = $('#sumCount'); if (s) s.textContent = `${words(cv.summary)} kata`;
+}
+function rerenderEditor(focusPath) {
+  const cv = cur(); $('#editor').innerHTML = editorHTML(cv); afterEditorRender(); refreshPreview(); refreshInsights();
+  if (focusPath) { const el = document.getElementById(idOf(focusPath)); if (el) el.focus(); }
+}
+
+/* ---------- file helpers ---------- */
+function download(name, text, type) {
+  try { const a = document.createElement('a'); a.href = URL.createObjectURL(new Blob([text], { type })); a.download = name; document.body.appendChild(a); a.click(); a.remove(); setTimeout(() => URL.revokeObjectURL(a.href), 1000); }
+  catch (e) { toast('Unduhan diblokir di tampilan ini. Buka file ini langsung di browser.'); }
+}
+async function copyText(text, okMsg) {
+  try { await navigator.clipboard.writeText(text); toast(okMsg); }
+  catch (e) { const t = document.createElement('textarea'); t.value = text; document.body.appendChild(t); t.select(); try { document.execCommand('copy'); toast(okMsg); } catch (_) { toast('Gagal menyalin. Blok teks secara manual.'); } t.remove(); }
+}
+const slug = s => String(s || 'cv').toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '') || 'cv';
+
+/* ---------- events ---------- */
+document.addEventListener('input', e => {
+  const t = e.target;
+  if (t.dataset && t.dataset.xyz) { ui.xyz[t.dataset.xyz] = t.value; return; }
+  const p = t.dataset && t.dataset.path; if (!p) return;
+  const cv = cur(); if (!cv) return;
+  setPath(cv, p, t.value);
+  if (t.tagName === 'TEXTAREA') autosize(t);
+  touch(); refreshPreview(); refreshInsights();
+});
+document.addEventListener('change', e => {
+  const t = e.target; const cv = cur();
+  if (t.dataset && t.dataset.bool && cv) { setPath(cv, t.dataset.bool, t.checked); touch(); rerenderEditor(); }
+  if (t.id === 'importFile' && t.files[0]) {
+    const fr = new FileReader();
+    fr.onload = () => {
+      try {
+        const d = JSON.parse(fr.result); const arr = Array.isArray(d) ? d : (d.cvs || [d]);
+        arr.forEach(c => { const n = normalize(c); n.id = uid(); db.cvs.push(n); });
+        save(true); render(); toast(`${arr.length} CV diimpor`);
+      } catch (err) { toast('File JSON tidak valid'); }
+    };
+    fr.readAsText(t.files[0]); t.value = '';
+  }
+});
+document.addEventListener('click', e => {
+  const b = e.target.closest('[data-action]'); if (!b) return;
+  const a = b.dataset.action; const cv = cur(); const p = b.dataset.path;
+  const arrOf = path => { const k = path.split('.'); const idx = +k.pop(); return [getPath(cv, k.join('.')), idx]; };
+  switch (a) {
+    case 'open': ui.cvId = b.dataset.id; ui.view = 'edit'; ui.tab = 'content'; ui.doc = 'cv'; ui.pane = 'edit'; ui.confirmDel = null; render(); break;
+    case 'back': ui.view = 'list'; ui.cvId = null; render(); break;
+    case 'new': { const base = [...db.cvs].sort((x, y) => y.updatedAt - x.updatedAt)[0]; const n = blankCV(base); db.cvs.push(n); save(true); ui.cvId = n.id; ui.view = 'edit'; ui.tab = 'content'; render(); toast('CV baru dibuat. Data diri disalin dari CV terakhir.'); break; }
+    case 'dup': { const src = db.cvs.find(c => c.id === b.dataset.id); const n = JSON.parse(JSON.stringify(src)); n.id = uid(); n.name = src.name + ' (salinan)'; n.updatedAt = Date.now(); n.target = { title: '', company: '', url: '', jd: '' }; n.cover.recipient = ''; n.cover.company = ''; db.cvs.push(n); save(true); ui.cvId = n.id; ui.view = 'edit'; ui.tab = 'target'; render(); toast('Disalin. Isi lowongan baru, lalu sesuaikan bullet.'); break; }
+    case 'del': if (ui.confirmDel === b.dataset.id) { db.cvs = db.cvs.filter(c => c.id !== b.dataset.id); ui.confirmDel = null; save(true); renderList(); toast('CV dihapus'); } else { ui.confirmDel = b.dataset.id; renderList(); clearTimeout(ui._cd); ui._cd = setTimeout(() => { ui.confirmDel = null; if (ui.view === 'list') renderList(); }, 3500); } break;
+    case 'tab': ui.tab = b.dataset.tab; if (ui.tab === 'cover') ui.doc = 'cl'; if (ui.tab === 'content') ui.doc = 'cv'; ui.xyzPath = null; render(); break;
+    case 'doc': ui.doc = b.dataset.doc; refreshPreview(); $$('[data-action="doc"]').forEach(x => x.classList.toggle('btn-primary', x.dataset.doc === ui.doc)); break;
+    case 'pane': ui.pane = b.dataset.pane; renderEdit(); break;
+    case 'add': { const lists = { experience: blankExp, projects: blankProj, education: blankEdu, skills: blankSkill, certs: blankCert, 'basics.links': () => ({ label: '', url: '' }) }; const arr = getPath(cv, p); arr.push(lists[p]()); touch(); rerenderEditor(); break; }
+    case 'rm': { const [arr, i] = arrOf(p); arr.splice(i, 1); touch(); rerenderEditor(); break; }
+    case 'mv': { const [arr, i] = arrOf(p); const j = i + +b.dataset.dir; if (j >= 0 && j < arr.length) { [arr[i], arr[j]] = [arr[j], arr[i]]; touch(); rerenderEditor(); } break; }
+    case 'add-bullet': { const arr = getPath(cv, p); arr.push(''); touch(); rerenderEditor(`${p}.${arr.length - 1}`); break; }
+    case 'rm-bullet': { const [arr, i] = arrOf(p); arr.splice(i, 1); if (!arr.length) arr.push(''); ui.xyzPath = null; touch(); rerenderEditor(); break; }
+    case 'xyz': ui.xyzPath = ui.xyzPath === p ? null : p; ui.xyz = { x: '', y: '', z: '' }; rerenderEditor(ui.xyzPath ? null : null); if (ui.xyzPath) { const x = $('#xyz_x'); if (x) x.focus(); } break;
+    case 'xyz-apply': { const { x, y, z } = ui.xyz; const txt = [x.trim(), y.trim(), z.trim()].filter(Boolean).join(' '); if (!txt) { toast('Isi minimal satu kolom XYZ'); break; } setPath(cv, p, txt); ui.xyzPath = null; touch(); rerenderEditor(p); break; }
+    case 'print': refreshPreview(); window.print(); break;
+    case 'copy-text': copyText(ui.doc === 'cv' ? cvText(cv) : letterText(cv), ui.doc === 'cv' ? 'CV disalin sebagai teks polos' : 'Cover letter disalin'); break;
+    case 'export-one': download(`cv-${slug(cv.name)}.json`, JSON.stringify([cv], null, 2), 'application/json'); break;
+    case 'export-all': download('cv-forge-backup.json', JSON.stringify(db.cvs, null, 2), 'application/json'); break;
+    case 'import': $('#importFile').click(); break;
+  }
+});
+window.addEventListener('resize', () => { applyGrid(); fitPreview(); });
+window.addEventListener('beforeprint', () => { if (ui.view === 'edit') refreshPreview(); });
+
+function render() { ui.view === 'list' ? renderList() : renderEdit(); window.scrollTo(0, 0); }
+load();
+render();
+</script>
+</body>
+</html>
